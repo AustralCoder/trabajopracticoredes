@@ -14,3 +14,6 @@ Anexo:
 https://crccalc.com/?crc=123456789&method=CRC-16/AUG-CCITT&datatype=ascii&outtype=hex
 
 
+# Operadores bitwise
+
+https://ellibrodepython.com/operadores-bitwise
