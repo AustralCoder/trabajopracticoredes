@@ -1,11 +1,11 @@
 import socket
 import random
-import crcmod # <--- Importas la biblioteca
+import crcmod
 
 # ===================== CONFIGURACIÓN =====================
 HOST = "127.0.0.1"  # Dirección IP local (localhost)
 PORT = 50000        # Puerto de escucha del servidor
-ERROR_PROB = 0.2    # Probabilidad de error (20%)
+ERROR_PROB = 0.5   # Probabilidad de error (20%)
 # ==========================================================
 
 
@@ -17,6 +17,7 @@ ERROR_PROB = 0.2    # Probabilidad de error (20%)
 #    - Rev: False
 #    - XorOut: 0x0000
 #    Esto crea una FUNCIÓN (crc16_func) que podemos llamar.
+
 crc16_func = crcmod.predefined.mkCrcFun('crc-ccitt-false')
 
 def crc16_ccitt(data: bytes) -> int:
@@ -31,16 +32,15 @@ def crc16_ccitt(data: bytes) -> int:
 # ------------------ SIMULACIÓN DE ERRORES ------------------
 def maybe_corrupt(data: bytes, p: float) -> bytes:
     """
-    Con probabilidad 'p', altera (voltea) un bit aleatorio del mensaje.
-    (Esta función no cambia)
+    Con probabilidad 'p', altera (o voltea) un bit aleatorio del mensaje
     """
     if random.random() < p:
         print("[Servidor] ¡ADVERTENCIA! Simulando corrupción de datos...")
         data_mutable = bytearray(data)
         byte_index = random.randint(0, len(data_mutable) - 1)
         bit_index = random.randint(0, 7)
-        mask = 1 << bit_index
-        data_mutable[byte_index] ^= mask
+        mascara = 1 << bit_index
+        data_mutable[byte_index] ^= mascara
         return bytes(data_mutable)
 
     return data
@@ -60,8 +60,8 @@ def main():
     while True:
         print("\n[Servidor] Esperando un nuevo mensaje...")
         
-        data, addr = sock.recvfrom(1024)
-        print(f"[Servidor] Mensaje recibido de {addr}")
+        data, direccion = sock.recvfrom(1024)
+        print(f"[Servidor] Mensaje recibido de {direccion}")
 
         data_a_procesar = maybe_corrupt(data, ERROR_PROB)
 
@@ -83,11 +83,11 @@ def main():
                 print(f"[Servidor] CRC ERROR (Seq: {seq_recibido}). Enviando NACK.")
                 respuesta = f"NACK {seq_recibido}"
             
-            sock.sendto(respuesta.encode(), addr)
+            sock.sendto(respuesta.encode(), direccion)
 
         except (IndexError, UnicodeDecodeError, ValueError) as e:
             print(f"[Servidor] ERROR: Paquete ilegible o mal formado. {e}")
-            sock.sendto(f"NACK ?".encode(), addr)
+            sock.sendto(f"NACK ?".encode(), direccion)
 
 
 if __name__ == "__main__":
