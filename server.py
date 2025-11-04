@@ -5,7 +5,7 @@ import crcmod
 # ===================== CONFIGURACIÓN =====================
 HOST = "127.0.0.1"  # Dirección IP local (localhost)
 PORT = 50000        # Puerto de escucha del servidor
-ERROR_PROB = 0.5   # Probabilidad de error (20%)
+ERROR_PROB = 0.2  # Probabilidad de error (20%)
 # ==========================================================
 
 
