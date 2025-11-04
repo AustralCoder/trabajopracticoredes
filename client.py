@@ -1,6 +1,6 @@
 import socket
 import time
-import crcmod  # <--- Importas la biblioteca
+import crcmod 
 
 # ===================== CONFIGURACIÓN =====================
 SERVER_HOST = "127.0.0.1"  # IP del servidor
@@ -9,16 +9,15 @@ TIMEOUT_S = 1.0            # Tiempo máximo de espera (1.0 segundos)
 MAX_RETRIES = 5            # Cantidad máxima de reintentos
 # ==========================================================
 
-# ¡Ya no se necesita la CRC_TABLE!
-
 # ------------------ FUNCIÓN CRC ------------------
 # 1. Definir la función CRC específica que queremos usar.
 #    'crc-ccitt-false' es el nombre estándar para:
 #    - Poly: 0x1021
 #    - Init: 0xFFFF
-#    - Rev: False
+#    - Rev: False | rev false significa que no se invierten los bits
 #    - XorOut: 0x0000
 #    Esto crea una FUNCIÓN (crc16_func) que podemos llamar.
+
 crc16_func = crcmod.predefined.mkCrcFun('crc-ccitt-false')
 
 def crc16_ccitt(data: bytes) -> int:
@@ -35,15 +34,13 @@ def send_with_retries(sock: socket.socket, server_addr, seq_num, message):
     """
     Envía un mensaje con número de secuencia 'seq_num' y retransmite
     si no recibe un ACK correcto en el tiempo establecido.
-    
-    (Esta función no cambia)
     """
-    
-    # 1. Preparar el paquete
+
+    # 1. Preparar el paquete. aclaremos que el paquete es: <seq>|<mensaje>|<crc>
     seq_str = str(seq_num)
     datos_para_crc = f"{seq_str}|{message}".encode()
     
-    # Llama a la nueva función crc16_ccitt (que ahora usa crcmod)
+    # Llama a la función crc16_ccitt
     crc_calculado = crc16_ccitt(datos_para_crc)
     
     crc_hex = f"{crc_calculado:x}"
@@ -59,7 +56,7 @@ def send_with_retries(sock: socket.socket, server_addr, seq_num, message):
             sock.sendto(paquete_bytes, server_addr)
 
             # 4. Esperar respuesta (esta línea se bloquea hasta TIMEOUT)
-            data, addr = sock.recvfrom(1024)
+            data, direccion = sock.recvfrom(1024)
             respuesta = data.decode()
             
             print(f"[Cliente] Servidor respondió: '{respuesta}'")
@@ -82,9 +79,7 @@ def send_with_retries(sock: socket.socket, server_addr, seq_num, message):
 
 # ------------------ PROGRAMA PRINCIPAL ------------------
 def main():
-    """
-    (Esta función no cambia)
-    """
+
     print(f"[Cliente] Comunicándose con {SERVER_HOST}:{SERVER_PORT}")
 
     server_addr = (SERVER_HOST, SERVER_PORT)
@@ -92,10 +87,11 @@ def main():
     # 1. Crear socket UDP
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     
-    # 2. Establecer timeout (¡CRÍTICO!)
+    # 2. Establecer timeout en el socket
+
     sock.settimeout(TIMEOUT_S)
 
-    seq = 0  # Número de secuencia inicial (0)
+    seq = 0  # Número de secuencia inicial (0) esto sirve para alternar entre 0 y 1
 
     # 3. Bucle principal del cliente
     while True:
