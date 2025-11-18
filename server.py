@@ -27,8 +27,6 @@ def crc16_ccitt(data: bytes) -> int:
     """
     return crc16_func(data)
 
-# ¡Y eso es todo para el CRC! No más tablas.
-
 # ------------------ SIMULACIÓN DE ERRORES ------------------
 def maybe_corrupt(data: bytes, p: float) -> bytes:
     """
@@ -48,9 +46,7 @@ def maybe_corrupt(data: bytes, p: float) -> bytes:
 
 # ------------------ PROGRAMA PRINCIPAL ------------------
 def main():
-    """
-    (Esta función no cambia)
-    """
+
     print(f"[Servidor] Iniciando servidor en {HOST}:{PORT}")
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
